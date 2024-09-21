@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple TODO List</title>
+  <title>TODO List with Edit Feature</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -72,13 +72,22 @@
       background-color: #d4edda;
     }
 
-    .delete-btn {
+    .delete-btn, .edit-btn {
       background-color: #dc3545;
       color: white;
       border: none;
       border-radius: 3px;
       padding: 5px 8px;
       cursor: pointer;
+      margin-left: 5px;
+    }
+
+    .edit-btn {
+      background-color: #007bff;
+    }
+
+    .edit-btn:hover {
+      background-color: #0056b3;
     }
 
     .delete-btn:hover {
@@ -91,34 +100,72 @@
   <div class="container">
     <h1>TODO List</h1>
     <input type="text" id="taskInput" placeholder="Add a new task">
-    <button onclick="addTask()">Add Task</button>
+    <button id="addTaskBtn" onclick="addTask()">Add Task</button>
     <ul id="taskList"></ul>
   </div>
 
   <script>
+    let editIndex = null;
+
+    // Add a new task
     function addTask() {
       const taskInput = document.getElementById('taskInput');
       const taskValue = taskInput.value.trim();
-      
+
       if (taskValue === "") {
         alert("Please enter a task!");
         return;
       }
 
-      const taskList = document.getElementById('taskList');
-      const li = document.createElement('li');
-      
-      li.innerHTML = `${taskValue} <button class="delete-btn" onclick="deleteTask(this)">Delete</button>`;
-      li.addEventListener('click', function() {
-        li.classList.toggle('completed');
-      });
+      if (editIndex !== null) {
+        // Update the existing task
+        document.querySelectorAll('#taskList li')[editIndex].firstChild.nodeValue = taskValue;
+        editIndex = null;
+        document.getElementById('addTaskBtn').innerText = 'Add Task';
+      } else {
+        // Add a new task
+        const taskList = document.getElementById('taskList');
+        const li = document.createElement('li');
+        li.textContent = taskValue;
 
-      taskList.appendChild(li);
-      taskInput.value = '';
+        // Add Edit and Delete buttons
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.className = 'edit-btn';
+        editBtn.onclick = () => editTask(li, taskInput.value);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.onclick = () => deleteTask(li);
+
+        li.appendChild(editBtn);
+        li.appendChild(deleteBtn);
+
+        li.addEventListener('click', function() {
+          li.classList.toggle('completed');
+        });
+
+        taskList.appendChild(li);
+      }
+
+      taskInput.value = ''; // Clear input
     }
 
-    function deleteTask(element) {
-      element.parentElement.remove();
+    // Edit task
+    function editTask(taskItem, taskText) {
+      const taskInput = document.getElementById('taskInput');
+      taskInput.value = taskText;  // Populate input with current task value
+
+      const taskItems = document.querySelectorAll('#taskList li');
+      editIndex = Array.from(taskItems).indexOf(taskItem);
+
+      document.getElementById('addTaskBtn').innerText = 'Update Task';
+    }
+
+    // Delete task
+    function deleteTask(taskItem) {
+      taskItem.remove();
     }
   </script>
 
